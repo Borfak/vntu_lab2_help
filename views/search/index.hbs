@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Пошук компанії</title>
+	<style>
+		table,
+		th,
+		td {
+			border: 1px solid;
+		}
+
+		td {
+			padding: 5px;
+		}
+	</style>
+</head>
+
+<body>
+	<h1>Пошук компанії</h1>
+	<form id="search-form" onsubmit="searchCompanies(); return false;">
+		<label>Знайти компанію:</label>
+		<input type="text" name="search-company" id="search-company" required>
+		<input type="submit" value="Пошук">
+	</form>
+	<div id="companies"></div>
+
+	<script>
+		function searchCompanies() {
+			const searchPhrase = document.getElementById('search-company').value;
+
+			fetch('http://localhost:3000/search', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ phrase: searchPhrase }),
+			})
+				.then(response => response.json())
+				.then(data => {
+					displayResults(data);
+				})
+				.catch(error => {
+					console.error('Error:', error);
+				});
+		}
+
+		function displayResults(data) {
+			const resultsContainer = document.getElementById('companies');
+			resultsContainer.innerHTML = '';
+
+			if (data && data.length > 0) {
+				const table = document.createElement('table');
+				const thead = document.createElement('thead');
+				const tbody = document.createElement('tbody');
+
+				const headers = ['ID', 'Назва компанії', 'Дата створення', 'Дата оновлення'];
+				const headerRow = document.createElement('tr');
+				headers.forEach(headerText => {
+					const th = document.createElement('th');
+					th.textContent = headerText;
+					headerRow.appendChild(th);
+				});
+				thead.appendChild(headerRow);
+
+				data.forEach(obj => {
+					const row = document.createElement('tr');
+					Object.values(obj).forEach(value => {
+						const cell = document.createElement('td');
+						cell.textContent = value;
+						row.appendChild(cell);
+					});
+					tbody.appendChild(row);
+				});
+
+				table.appendChild(thead);
+				table.appendChild(tbody);
+				resultsContainer.appendChild(table);
+			} else {
+				resultsContainer.textContent = 'Компанії не знайдено!';
+			}
+		}
+	</script>
+
+</body>
+
+</html>
